@@ -1,0 +1,100 @@
+---
+title: "Crime in Chicago's Community Areas"
+author: "Troy Hernandez"
+date: "March 12, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+```
+
+## 
+
+[Last time](https://troyhernandez.com/2019/02/21/crime-in-the-25th-ward/) I wrote about violent crime in Chicago dropping by 44% since 2001.  Then I examined two community areas in the 25th ward, the Lower West Side and the Near West Side.  While they had drops in crime of 30% and 17% percent respectively, that changed after accounting for their dramatic changes in population.  Lower West Side population is down by 25%.  Near West Side population is up by 35%.  That means their per capita crime has dropped 13% and 34% respectively.
+
+This left me with a few questions for the city at large:
+
+1. What are the population changes?
+2. How have crime rates changed?
+3. How have per capita crime rates changed?
+
+```{r, echo = FALSE}
+library(leaflet)
+library(sp)
+chicommunities <- readRDS("data/ChiComms.Rds")
+```
+
+## Change in Population, 2000-2018
+
+This data comes from [CMAP's community data snapshots](https://datahub.cmap.illinois.gov/dataset/community-data-snapshots-raw-data).  This is the *percent change in population*.  It's the estimated 2018 population divided by the population from the 2000 census minus 1.  Numbers below 0 indicate an area that is losing population. Numbers above 0 indicate an area is gaining population.  For example, citywide, the ratio minus 1 is: `r round(sum(chicommunities$pop18) / sum(chicommunities$pop00), 2) - 1`.  That means we've lost `r (1 - round(sum(chicommunities$pop18) / sum(chicommunities$pop00), 2)) * 100`% of our population since 2000.
+
+```{r}
+pal2 <- colorNumeric("RdBu", domain = c(-max(chicommunities$growth),
+                                        max(chicommunities$growth)),
+                     reverse = TRUE)
+
+leaflet(chicommunities) %>%
+  addTiles() %>%
+  addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = .75,
+              fillColor = ~pal2(growth),
+              label = ~paste0(community, ": ", round(growth), "%"),
+              group = "growth") %>%
+  addLegend(pal = pal2, values = ~(chicommunities$growth), opacity = 1.0,
+            title = "Pop. Change (%)")
+```
+
+Everyone should be familiar with the exodus from the South and West sides.  Everyone knows about the booming West Loop. But holy cow.  The Loop has more than doubled in population since 2000! That is, population is up by 114% since 2000.  The Near South Side is up by 144%!  We've heard about the booming the Loop, but it's another thing to see the contrast.
+
+## Crime Change, 2002-2018
+
+This data comes from [the city's data portal](# https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2
+).  This is the *percent change in all crime* from 2002 until 2018.  2001 data was incomplete.  Negative numbers mean a decrease in crime.  Positive numbers are an increase.  I wrote before that violent crime is down 44%.  All crimes together are down 25% citywide.
+
+```{r pressure, echo=FALSE}
+# crime.drop
+pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$crime.change)),
+                                       max(abs(chicommunities$crime.change))),
+                    reverse = TRUE)
+
+leaflet(chicommunities) %>%
+  addTiles() %>%
+  addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = .75,
+              fillColor = ~pal(chicommunities$crime.change),
+              label = ~paste0(community, ": ",
+                              round(chicommunities$crime.change, 2) * 100, "%"),
+              group = "crime.change") %>%
+  addLegend(pal = pal, values = ~(chicommunities$crime.change), opacity = 1.0,
+            title = "Crime Change (%)")
+```
+
+Crime is up 48% in the Loop!!! Yeah, but with twice as many people around, that actually means residents of the Loop are victims less often.  Hence, the per capita crime change calculated in the next section.
+
+# Change in Per Capita Crime, 2002-2018
+
+To combine the two previous data sets, I had to extrapolate the population from 2000 to 2002.  I calculated the average growth rate from 2000 to 2018 and used that to extrapolate forward 2 years.  I then calculated the *per capita crime rate* (PCCR) in 2002 and 2018.  That is: The total number of crimes divided by the population for each year.  Then I divided 2018's PCCR by 2002's PCCR and subtracted 1. Numbers below 0 mean that PCCR is dropping, above 0 means PCCR is rising.
+
+A city-wid example: There were approximately 354,096 crimes in 2002 with an estimated population of 2.87 million people.  That's a PCCR of .123.  In 2018 there were 265,223 crimes with an estimated population of 2.71 million.  That's a PCCR of .098.  If you divide .098 by .123 and subtract 1, you get -0.207.  That's a 21% reduction in PCCR citywide.
+
+```{r}
+pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$per.cap.crime.change)),
+                                       max(abs(chicommunities$per.cap.crime.change))),
+                    reverse = TRUE)
+
+leaflet(chicommunities) %>%
+  addTiles() %>%
+  addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = .75,
+              fillColor = ~pal(per.cap.crime.change),
+              label = ~paste0(community, ": ", round(per.cap.crime.change, 2) * 100, "%")) %>%
+  addLegend(pal = pal, values = ~(per.cap.crime.change), opacity = 1.0,
+            title = "Change PCCR (%)")
+
+```
+
+You can see that the PCCR has dropped in 72 community areas with the Near South Side, North Center, and McKinley Park leading the pack.  It's risen in only 5 of the city's community areas.  These areas are in the South and West sides, with West Garield Park leading the pack.  I imagine that has something to do with the new Cop Academy being put there.
+
+I intend on doing a little more work looking at changes in *violent crime*, but that'll have to wait for another day.  I think a good chunk of the story is here.  Crime is dropping.  Despite our declining population, crime rates are dropping too.  That's a good thing.  Moreover, this data is of the headline-grabbing/FBI variety.  This is not the more conservative Bureau of Justice Statistics variety. Again, from [Matt Taibbi's new book](https://taibbi.substack.com/p/all-the-folk-devils-are-here):
+
+> Every crime reporter will tell you there are two major outlets for national crime statistics, particularly violent crime: the annual reports by the FBI, and the Bureau of Justice Statistics. Both are outputs of the Department of Justice, but the BJS uses the same methodology every year (it’s based upon broad surveys of households, asking people if they were victims of crimes) and tends to report less alarming statistics. Newspapers inevitably use FBI stats, which use varying methodologies and somehow always come out a little scarier. Going by the FBI, violent crime fell 49% between 1993 and 2017. By the BJS, violent crime fell 74% during the same period. But the public doesn’t believe it.
+
+If you'd like to recreate this, the code is available at my [github](https://github.com/TroyHernandez/ChiCommsCrime).
