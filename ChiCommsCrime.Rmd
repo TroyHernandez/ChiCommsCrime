@@ -53,18 +53,18 @@ This data comes from [the city's data portal](# https://data.cityofchicago.org/P
 
 ```{r pressure, echo=FALSE}
 # crime.drop
-pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$crime.change)),
-                                       max(abs(chicommunities$crime.change))),
+pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$crime.change * 100)),
+                                       max(abs(chicommunities$crime.change * 100))),
                     reverse = TRUE)
 
 leaflet(chicommunities) %>%
   addTiles() %>%
   addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = .75,
-              fillColor = ~pal(chicommunities$crime.change),
+              fillColor = ~pal(chicommunities$crime.change * 100),
               label = ~paste0(community, ": ",
                               round(chicommunities$crime.change, 2) * 100, "%"),
               group = "crime.change") %>%
-  addLegend(pal = pal, values = ~(chicommunities$crime.change), opacity = 1.0,
+  addLegend(pal = pal, values = ~(chicommunities$crime.change * 100), opacity = 1.0,
             title = "Crime Change (%)")
 ```
 
@@ -79,16 +79,16 @@ The PCCR is the total number of crimes divided by the population for each year. 
 A citywide example: There were 354,096 crimes in 2002 with an estimated population of 2.87 million people. That’s a PCCR of .123; i.e. for every 1,000 people there are 123 crimes reported. In 2018 there were 265,223 crimes with an estimated population of 2.71 million. That’s a PCCR of .098. If you divide .098 by .123 and subtract 1, you get -0.207. That’s a 21% reduction in PCCR citywide. That means citywide, there were 21% fewer crimes per person in 2018 than in 2002!
 
 ```{r}
-pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$per.cap.crime.change)),
-                                       max(abs(chicommunities$per.cap.crime.change))),
+pal <- colorNumeric("RdBu", domain = c(-max(abs(chicommunities$per.cap.crime.change * 100)),
+                                       max(abs(chicommunities$per.cap.crime.change * 100))),
                     reverse = TRUE)
 
 leaflet(chicommunities) %>%
   addTiles() %>%
   addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = .75,
-              fillColor = ~pal(per.cap.crime.change),
+              fillColor = ~pal(per.cap.crime.change * 100),
               label = ~paste0(community, ": ", round(per.cap.crime.change, 2) * 100, "%")) %>%
-  addLegend(pal = pal, values = ~(per.cap.crime.change), opacity = 1.0,
+  addLegend(pal = pal, values = ~(per.cap.crime.change * 100), opacity = 1.0,
             title = "Change PCCR (%)")
 
 ```
