@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 ```
 
 [Last time](https://troyhernandez.com/2019/02/21/crime-in-the-25th-ward/)
-I wrote about violent crime in Chicago dropping by 44% since 2001. Then I examined two community areas in the 25th ward, the Lower West Side and the Near West Side. While they had drops in crime of 30% and 17% percent respectively, that changed after accounting for their dramatic changes in population. The Lower West Side’s population is down by 25%. The Near West Side’s population is up by 35%. That means their per capita crime rate has dropped 13% and 34% respectively.
+I wrote about violent crime in Chicago dropping by 44% since 2001. Then I examined two community areas in the 25th ward, the Lower West Side and the Near West Side. While they had drops in crime of 33% and 14% percent between 2018 and 2002 respectively, that changed after accounting for their dramatic changes in population. The Lower West Side’s population is down by 23% (25% since 2000). The Near West Side’s population is up by 30% (35% since 2000). That means their per capita crime rate has dropped 13% and 34% respectively.
 This left me with a few questions for the city at large:
 
 1. What are the population changes?
